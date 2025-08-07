@@ -217,7 +217,12 @@ format_result() {
   if [[ "$class_name" == *"breach"* ]]; then
     echo -e "\n\033[1;31m${icon} ${service_name}\033[0m"
     if echo "$result" | jq -e '.full.breaches' >/dev/null 2>&1; then
-      echo "$result" | jq -r '.full.breaches[]? | "  • \(.name) (\(.breach_date | strftime("%Y")))"' 2>/dev/null || echo "  No breach details available"
+      local breach_count=$(echo "$result" | jq '.full.breaches | length' 2>/dev/null || echo "0")
+      if [ "$breach_count" -gt 0 ]; then
+        echo "  Found in $breach_count data breaches"
+      else
+        echo "  No breaches found"
+      fi
     else
       echo "  No breach information available"
     fi
@@ -258,38 +263,35 @@ else
   echo -e "\033[1;90m$(date '+%Y-%m-%d %H:%M:%S')\033[0m"
 
   temp_file="/tmp/sx_registered_$$"
-  output_buffer="/tmp/sx_output_$$"
+  module_buffer="/tmp/sx_module_$$"
 
-  # Buffer all output
-  {
-    curl -X POST https://api.osint.sx/search \
-      -H "Authorization: $API_KEY" \
-      -H "Content-Type: application/json" \
-      -d "{\"moduleType\": \"$MODULE_TYPE\", \"identifier\": \"$IDENTIFIER\"}" \
-      -s | while IFS= read -r line; do
-      if echo "$line" | jq -e '.className and .result' >/dev/null 2>&1; then
-        class_name=$(echo "$line" | jq -r '.className')
-        result=$(echo "$line" | jq -c '.result')
+  curl -X POST https://api.osint.sx/search \
+    -H "Authorization: $API_KEY" \
+    -H "Content-Type: application/json" \
+    -d "{\"moduleType\": \"$MODULE_TYPE\", \"identifier\": \"$IDENTIFIER\"}" \
+    -s | while IFS= read -r line; do
+    if echo "$line" | jq -e '.className and .result' >/dev/null 2>&1; then
+      class_name=$(echo "$line" | jq -r '.className')
+      result=$(echo "$line" | jq -c '.result')
 
-        if [[ "$class_name" == *"register"* ]]; then
-          service_name=$(echo "$class_name" | sed 's/emailregister$//' | sed 's/phoneregister$//' | sed 's/usernameregister$//' | sed 's/register$//')
-          echo "$service_name" >>"$temp_file"
-        else
-          format_result "$class_name" "$result"
-        fi
+      if [[ "$class_name" == *"register"* ]]; then
+        service_name=$(echo "$class_name" | sed 's/emailregister$//' | sed 's/phoneregister$//' | sed 's/usernameregister$//' | sed 's/register$//')
+        echo "$service_name" >>"$temp_file"
+      else
+        # Buffer each module's output
+        format_result "$class_name" "$result" > "$module_buffer"
+        # Display the buffered module
+        cat "$module_buffer"
+        rm -f "$module_buffer"
       fi
-    done
-
-    if [ -f "$temp_file" ] && [ -s "$temp_file" ]; then
-      echo -e "\n\033[1;33m📋 Registered Services\033[0m"
-      while IFS= read -r service; do
-        echo -e "  • \033[1;32m$(echo "$service" | sed 's/.*/\L&/' | sed 's/\b\w/\U&/g')\033[0m: Registered"
-      done <"$temp_file"
-      rm -f "$temp_file"
     fi
-  } > "$output_buffer"
+  done
 
-  # Display buffered output all at once
-  cat "$output_buffer"
-  rm -f "$output_buffer"
+  if [ -f "$temp_file" ] && [ -s "$temp_file" ]; then
+    echo -e "\n\033[1;33m📋 Registered Services\033[0m"
+    while IFS= read -r service; do
+      echo -e "  • \033[1;32m$(echo "$service" | sed 's/.*/\L&/' | sed 's/\b\w/\U&/g')\033[0m: Registered"
+    done <"$temp_file"
+    rm -f "$temp_file"
+  fi
 fi
