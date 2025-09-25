@@ -51,7 +51,7 @@ sync_services() {
     extract_modules "$SERVICES_FILE" | sort > "$old_modules_file"
   fi
   
-  if curl -sf "https://raw.githubusercontent.com/gnomegl/sx/main/services.yaml" -o "$temp_file" 2>/dev/null; then
+  if curl -sf "https://raw.githubusercontent.com/gnomegl/sx/HEAD/services.yaml" -o "$temp_file" 2>/dev/null; then
     if [ "$has_existing" = true ]; then
       extract_modules "$temp_file" | sort > "$new_modules_file"
       
