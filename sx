@@ -7,6 +7,20 @@ if [ -z "$API_KEY" ]; then
   exit 1
 fi
 
+if ! command -v yq &>/dev/null; then
+  echo "Error: yq (YAML parser) is required but not installed" >&2
+  echo "Install with: go install github.com/mikefarah/yq/v4@latest" >&2
+  exit 1
+fi
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SERVICES_FILE="$SCRIPT_DIR/services.yaml"
+
+if [ ! -f "$SERVICES_FILE" ]; then
+  echo "Error: services.yaml not found at $SERVICES_FILE" >&2
+  exit 1
+fi
+
 JSON_MODE=false
 
 show_usage() {
@@ -14,6 +28,7 @@ show_usage() {
   echo ""
   echo "Options:"
   echo "  -j, --json    Output raw JSON stream (no formatting)"
+  echo "  -l, --list    List all available modules"
   echo "  -h, --help    Show this help message"
   echo ""
   echo "Examples:"
@@ -21,6 +36,47 @@ show_usage() {
   echo "  sx username johndoe"
   echo "  sx phone +15551234567"
   echo "  sx --json email user@domain.com"
+  echo "  sx --list email"
+}
+
+list_modules() {
+  local module_type="$1"
+  case "$module_type" in
+  email)
+    echo "Available Email Modules:"
+    yq eval '.email_modules[]' "$SERVICES_FILE" | while read -r module; do
+      local service_name=$(echo "$module" | sed 's/email$//')
+      local service_info=$(get_service_info "$service_name")
+      local icon=$(echo "$service_info" | cut -d'|' -f1)
+      local name=$(echo "$service_info" | cut -d'|' -f2)
+      echo "  $icon $name ($module)"
+    done
+    ;;
+  phone)
+    echo "Available Phone Modules:"
+    yq eval '.phone_modules[]' "$SERVICES_FILE" | while read -r module; do
+      local service_name=$(echo "$module" | sed 's/phone$//')
+      local service_info=$(get_service_info "$service_name")
+      local icon=$(echo "$service_info" | cut -d'|' -f1)
+      local name=$(echo "$service_info" | cut -d'|' -f2)
+      echo "  $icon $name ($module)"
+    done
+    ;;
+  username)
+    echo "Available Username Modules:"
+    yq eval '.username_modules[]' "$SERVICES_FILE" | while read -r module; do
+      local service_name=$(echo "$module" | sed 's/username$//')
+      local service_info=$(get_service_info "$service_name")
+      local icon=$(echo "$service_info" | cut -d'|' -f1)
+      local name=$(echo "$service_info" | cut -d'|' -f2)
+      echo "  $icon $name ($module)"
+    done
+    ;;
+  *)
+    echo "Available module types: email, phone, username"
+    echo "Usage: sx --list <type>"
+    ;;
+  esac
 }
 
 parse_args() {
@@ -29,6 +85,16 @@ parse_args() {
     -j | --json)
       JSON_MODE=true
       shift
+      ;;
+    -l | --list)
+      if [ -n "$2" ] && [[ ! "$2" =~ ^- ]]; then
+        list_modules "$2"
+        exit 0
+      else
+        echo "Error: Module type required for --list" >&2
+        echo "Usage: sx --list <email|phone|username>" >&2
+        exit 1
+      fi
       ;;
     -h | --help)
       show_usage
@@ -59,55 +125,55 @@ format_json_value() {
   local value="$1"
   local indent="$2"
   local key="$3"
-  
+
   local type=$(echo "$value" | jq -r 'type')
-  
+
   case "$type" in
-    "object")
-      if [ -n "$key" ]; then
-        echo -e "${indent}\033[1;32m${key}:\033[0m"
-      fi
-      local keys=$(echo "$value" | jq -r 'keys[]' 2>/dev/null)
-      if [ -n "$keys" ]; then
-        while IFS= read -r k; do
-          local v=$(echo "$value" | jq -c --arg key "$k" '.[$key]')
-          format_json_value "$v" "${indent}  " "$k"
-        done <<< "$keys"
-      fi
-      ;;
-    "array")
-      if [ -n "$key" ]; then
-        echo -e "${indent}\033[1;32m${key}:\033[0m"
-      fi
-      local count=$(echo "$value" | jq 'length')
-      if [ "$count" -eq 0 ]; then
-        echo "${indent}  (empty)"
-      else
-        local i=0
-        while [ $i -lt $count ]; do
-          local item=$(echo "$value" | jq -c ".[$i]")
-          if echo "$item" | jq -e 'type == "string" or type == "number" or type == "boolean"' >/dev/null 2>&1; then
-            echo "${indent}  • $(echo "$item" | jq -r '.')"
-          else
-            format_json_value "$item" "${indent}  " ""
-          fi
-          ((i++))
-        done
-      fi
-      ;;
-    "string"|"number"|"boolean")
-      local val=$(echo "$value" | jq -r '.')
-      if [ -n "$key" ]; then
-        echo -e "${indent}\033[1;32m${key}:\033[0m $val"
-      else
-        echo "${indent}$val"
-      fi
-      ;;
-    "null")
-      if [ -n "$key" ]; then
-        echo -e "${indent}\033[1;32m${key}:\033[0m null"
-      fi
-      ;;
+  "object")
+    if [ -n "$key" ]; then
+      echo -e "${indent}\033[1;32m${key}:\033[0m"
+    fi
+    local keys=$(echo "$value" | jq -r 'keys[]' 2>/dev/null)
+    if [ -n "$keys" ]; then
+      while IFS= read -r k; do
+        local v=$(echo "$value" | jq -c --arg key "$k" '.[$key]')
+        format_json_value "$v" "${indent}  " "$k"
+      done <<<"$keys"
+    fi
+    ;;
+  "array")
+    if [ -n "$key" ]; then
+      echo -e "${indent}\033[1;32m${key}:\033[0m"
+    fi
+    local count=$(echo "$value" | jq 'length')
+    if [ "$count" -eq 0 ]; then
+      echo "${indent}  (empty)"
+    else
+      local i=0
+      while [ $i -lt $count ]; do
+        local item=$(echo "$value" | jq -c ".[$i]")
+        if echo "$item" | jq -e 'type == "string" or type == "number" or type == "boolean"' >/dev/null 2>&1; then
+          echo "${indent}  • $(echo "$item" | jq -r '.')"
+        else
+          format_json_value "$item" "${indent}  " ""
+        fi
+        ((i++))
+      done
+    fi
+    ;;
+  "string" | "number" | "boolean")
+    local val=$(echo "$value" | jq -r '.')
+    if [ -n "$key" ]; then
+      echo -e "${indent}\033[1;32m${key}:\033[0m $val"
+    else
+      echo "${indent}$val"
+    fi
+    ;;
+  "null")
+    if [ -n "$key" ]; then
+      echo -e "${indent}\033[1;32m${key}:\033[0m null"
+    fi
+    ;;
   esac
 }
 
@@ -115,105 +181,30 @@ get_service_info() {
   local class_name="$1"
   local service_name=""
   local icon=""
-  
-  # Extract service name and assign icon
-  case "$class_name" in
-    *"google"*) service_name="Google"; icon="🔍" ;;
-    *"imageshack"*) service_name="Imageshack"; icon="📷" ;;
-    *"paypal"*) service_name="PayPal"; icon="💳" ;;
-    *"eventbrite"*) service_name="Eventbrite"; icon="📅" ;;
-    *"spotify"*) service_name="Spotify"; icon="🎧" ;;
-    *"dropbox"*) service_name="Dropbox"; icon="📦" ;;
-    *"microsoft"*) service_name="Microsoft"; icon="🪟" ;;
-    *"github"*) service_name="GitHub"; icon="🐙" ;;
-    *"twitter"*) service_name="Twitter/X"; icon="🐦" ;;
-    *"discord"*) service_name="Discord"; icon="💬" ;;
-    *"telegram"*) service_name="Telegram"; icon="📱" ;;
-    *"whatsapp"*) service_name="WhatsApp"; icon="💬" ;;
-    *"instagram"*) service_name="Instagram"; icon="📷" ;;
-    *"facebook"*) service_name="Facebook"; icon="👤" ;;
-    *"linkedin"*) service_name="LinkedIn"; icon="💼" ;;
-    *"youtube"*) service_name="YouTube"; icon="📺" ;;
-    *"tiktok"*) service_name="TikTok"; icon="🎵" ;;
-    *"snapchat"*) service_name="Snapchat"; icon="👻" ;;
-    *"reddit"*) service_name="Reddit"; icon="🔶" ;;
-    *"pinterest"*) service_name="Pinterest"; icon="📌" ;;
-    *"tumblr"*) service_name="Tumblr"; icon="📱" ;;
-    *"twitch"*) service_name="Twitch"; icon="🎮" ;;
-    *"steam"*) service_name="Steam"; icon="🎮" ;;
-    *"minecraft"*) service_name="Minecraft"; icon="🎮" ;;
-    *"roblox"*) service_name="Roblox"; icon="🎮" ;;
-    *"ea"*) service_name="EA Games"; icon="🎮" ;;
-    *"adobe"*) service_name="Adobe"; icon="🎨" ;;
-    *"amazon"*) service_name="Amazon"; icon="📦" ;;
-    *"ebay"*) service_name="eBay"; icon="🛒" ;;
-    *"venmo"*) service_name="Venmo"; icon="💸" ;;
-    *"cashapp"*) service_name="CashApp"; icon="💵" ;;
-    *"breach"*) service_name="Data Breaches"; icon="🚨" ;;
-    *"trello"*) service_name="Trello"; icon="📋" ;;
-    *"medium"*) service_name="Medium"; icon="📝" ;;
-    *"quora"*) service_name="Quora"; icon="❓" ;;
-    *"wordpress"*) service_name="WordPress"; icon="📝" ;;
-    *"gravatar"*) service_name="Gravatar"; icon="👤" ;;
-    *"foursquare"*) service_name="Foursquare"; icon="🗺️" ;;
-    *"yelp"*) service_name="Yelp"; icon="⭐" ;;
-    *"uber"*) service_name="Uber"; icon="🚗" ;;
-    *"lyft"*) service_name="Lyft"; icon="🚕" ;;
-    *"airbnb"*) service_name="Airbnb"; icon="🏠" ;;
-    *"netflix"*) service_name="Netflix"; icon="🎬" ;;
-    *"hulu"*) service_name="Hulu"; icon="📺" ;;
-    *"plex"*) service_name="Plex"; icon="🎬" ;;
-    *"apple"*) service_name="Apple"; icon="🍎" ;;
-    *"samsung"*) service_name="Samsung"; icon="📱" ;;
-    *"huggingface"*) service_name="HuggingFace"; icon="🤗" ;;
-    *"replit"*) service_name="Replit"; icon="💻" ;;
-    *"codepen"*) service_name="CodePen"; icon="🖊️" ;;
-    *"deviantart"*) service_name="DeviantArt"; icon="🎨" ;;
-    *"bandlab"*) service_name="BandLab"; icon="🎸" ;;
-    *"soundcloud"*) service_name="SoundCloud"; icon="☁️" ;;
-    *"audius"*) service_name="Audius"; icon="🎶" ;;
-    *"smule"*) service_name="Smule"; icon="🎵" ;;
-    *"vivino"*) service_name="Vivino"; icon="🍷" ;;
-    *"goodreads"*) service_name="Goodreads"; icon="📚" ;;
-    *"bible"*) service_name="Bible App"; icon="📖" ;;
-    *"lichess"*) service_name="Lichess"; icon="♟️" ;;
-    *"chess"*) service_name="Chess.com"; icon="♟️" ;;
-    *"myspace"*) service_name="MySpace"; icon="🌐" ;;
-    *"flickr"*) service_name="Flickr"; icon="📸" ;;
-    *"imgur"*) service_name="Imgur"; icon="📷" ;;
-    *"vimeo"*) service_name="Vimeo"; icon="🎥" ;;
-    *"dailymotion"*) service_name="Dailymotion"; icon="▶️" ;;
-    *"streamable"*) service_name="Streamable"; icon="📹" ;;
-    *"tubi"*) service_name="Tubi"; icon="📺" ;;
-    *"pagesix"*) service_name="PageSix"; icon="📰" ;;
-    *"decider"*) service_name="Decider"; icon="📰" ;;
-    *"fishbrain"*) service_name="FishBrain"; icon="🎣" ;;
-    *"otter"*) service_name="Otter.ai"; icon="🦦" ;;
-    *"sololearn"*) service_name="SoloLearn"; icon="🎓" ;;
-    *"zapier"*) service_name="Zapier"; icon="⚡" ;;
-    *"touchtunes"*) service_name="TouchTunes"; icon="🎵" ;;
-    *"toneden"*) service_name="ToneDen"; icon="🎧" ;;
-    *"whoxy"*) service_name="Domain Ownership"; icon="🌐" ;;
-    *"nextdoor"*) service_name="Nextdoor"; icon="🏠" ;;
-    *"instacart"*) service_name="Instacart"; icon="🛒" ;;
-    *"characterai"*) service_name="Character.AI"; icon="🤖" ;;
-    *)
-      service_name=$(echo "$class_name" | sed 's/email//' | sed 's/phone//' | sed 's/username//' | sed 's/register//' | sed 's/_/ /g' | sed 's/.*/\u&/')
-      icon="❓"
-      ;;
-  esac
-  
+
+  local base_name=$(echo "$class_name" | sed 's/email$//' | sed 's/phone$//' | sed 's/username$//' | sed 's/register$//' | sed 's/.*/\L&/')
+
+  local service_data=$(yq eval ".categories.*.services.$base_name" "$SERVICES_FILE" 2>/dev/null | head -1)
+
+  if [ -n "$service_data" ] && [ "$service_data" != "null" ]; then
+    icon=$(echo "$service_data" | yq eval '.icon' - 2>/dev/null)
+    service_name=$(echo "$service_data" | yq eval '.name' - 2>/dev/null)
+  else
+    service_name=$(echo "$base_name" | sed 's/.*/\u&/')
+    icon="❓"
+  fi
+
   echo "$icon|$service_name"
 }
 
 format_result() {
   local class_name="$1"
   local result="$2"
-  
+
   local service_info=$(get_service_info "$class_name")
   local icon=$(echo "$service_info" | cut -d'|' -f1)
   local service_name=$(echo "$service_info" | cut -d'|' -f2)
-  
+
   if [[ "$class_name" == *"breach"* ]]; then
     echo -e "\n\033[1;31m${icon} ${service_name}\033[0m"
     if echo "$result" | jq -e '.full.breaches' >/dev/null 2>&1; then
@@ -228,14 +219,14 @@ format_result() {
     fi
     return
   fi
-  
+
   echo -e "\n\033[1;36m${icon} ${service_name}\033[0m"
-  
+
   if echo "$result" | jq -e '. == null or . == {}' >/dev/null 2>&1; then
     echo "  No data available"
     return
   fi
-  
+
   format_json_value "$result" "  " ""
 }
 
@@ -254,8 +245,8 @@ fi
 
 if [ "$JSON_MODE" = true ]; then
   curl -X POST https://api.osint.sx/search \
-    -H "Authorization: $API_KEY" \
-    -H "Content-Type: application/json" \
+    -H "x-api-key: $API_KEY" \
+    -H "content-type: application/json" \
     -d "{\"moduleType\": \"$MODULE_TYPE\", \"identifier\": \"$IDENTIFIER\"}" \
     -s | jq -c 'select(.progress == null)'
 else
@@ -266,8 +257,8 @@ else
   module_buffer="/tmp/sx_module_$$"
 
   curl -X POST https://api.osint.sx/search \
-    -H "Authorization: $API_KEY" \
-    -H "Content-Type: application/json" \
+    -H "x-api-key: $API_KEY" \
+    -H "content-type: application/json" \
     -d "{\"moduleType\": \"$MODULE_TYPE\", \"identifier\": \"$IDENTIFIER\"}" \
     -s | while IFS= read -r line; do
     if echo "$line" | jq -e '.className and .result' >/dev/null 2>&1; then
@@ -278,9 +269,7 @@ else
         service_name=$(echo "$class_name" | sed 's/emailregister$//' | sed 's/phoneregister$//' | sed 's/usernameregister$//' | sed 's/register$//')
         echo "$service_name" >>"$temp_file"
       else
-        # Buffer each module's output
-        format_result "$class_name" "$result" > "$module_buffer"
-        # Display the buffered module
+        format_result "$class_name" "$result" >"$module_buffer"
         cat "$module_buffer"
         rm -f "$module_buffer"
       fi

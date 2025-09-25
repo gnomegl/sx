@@ -1,0 +1,423 @@
+# OSINT.sx Services Configuration
+# This file contains all available modules organized by category with their icons
+
+categories:
+  social_media:
+    icon: "💬"
+    description: "Social Media Platforms"
+    services:
+      twitter: { icon: "🐦", name: "Twitter/X" }
+      instagram: { icon: "📷", name: "Instagram" }
+      facebook: { icon: "👤", name: "Facebook" }
+      linkedin: { icon: "💼", name: "LinkedIn" }
+      youtube: { icon: "📺", name: "YouTube" }
+      tiktok: { icon: "🎵", name: "TikTok" }
+      snapchat: { icon: "👻", name: "Snapchat" }
+      reddit: { icon: "🔶", name: "Reddit" }
+      pinterest: { icon: "📌", name: "Pinterest" }
+      tumblr: { icon: "📱", name: "Tumblr" }
+      twitch: { icon: "🎮", name: "Twitch" }
+      discord: { icon: "💬", name: "Discord" }
+      telegram: { icon: "📱", name: "Telegram" }
+      whatsapp: { icon: "💬", name: "WhatsApp" }
+
+  entertainment:
+    icon: "🎬"
+    description: "Entertainment & Streaming"
+    services:
+      netflix: { icon: "🎬", name: "Netflix" }
+      hulu: { icon: "📺", name: "Hulu" }
+      plex: { icon: "🎬", name: "Plex" }
+      spotify: { icon: "🎧", name: "Spotify" }
+      soundcloud: { icon: "☁️", name: "SoundCloud" }
+      audius: { icon: "🎶", name: "Audius" }
+      smule: { icon: "🎵", name: "Smule" }
+      bandlab: { icon: "🎸", name: "BandLab" }
+      vimeo: { icon: "🎥", name: "Vimeo" }
+      dailymotion: { icon: "▶️", name: "Dailymotion" }
+      streamable: { icon: "📹", name: "Streamable" }
+      tubi: { icon: "📺", name: "Tubi" }
+
+  gaming:
+    icon: "🎮"
+    description: "Gaming Platforms"
+    services:
+      steam: { icon: "🎮", name: "Steam" }
+      minecraft: { icon: "🎮", name: "Minecraft" }
+      roblox: { icon: "🎮", name: "Roblox" }
+      ea: { icon: "🎮", name: "EA Games" }
+      chess: { icon: "♜", name: "Chess.com" }
+      lichess: { icon: "♜", name: "Lichess" }
+
+  tech_development:
+    icon: "💻"
+    description: "Technology & Development"
+    services:
+      github: { icon: "🐙", name: "GitHub" }
+      gitlab: { icon: "🦊", name: "GitLab" }
+      bitbucket: { icon: "🔵", name: "Bitbucket" }
+      replit: { icon: "💻", name: "Replit" }
+      codepen: { icon: "🖊️", name: "CodePen" }
+      huggingface: { icon: "🤗", name: "HuggingFace" }
+      stackoverflow: { icon: "🗣️", name: "Stack Overflow" }
+
+  productivity:
+    icon: "📋"
+    description: "Productivity & Business"
+    services:
+      dropbox: { icon: "📦", name: "Dropbox" }
+      box: { icon: "📦", name: "Box" }
+      notion: { icon: "📝", name: "Notion" }
+      trello: { icon: "📋", name: "Trello" }
+      medium: { icon: "📝", name: "Medium" }
+      quora: { icon: "❓", name: "Quora" }
+      wordpress: { icon: "📝", name: "WordPress" }
+      typeform: { icon: "📋", name: "Typeform" }
+      zapier: { icon: "⚡", name: "Zapier" }
+
+  e_commerce:
+    icon: "🛒"
+    description: "E-commerce & Marketplaces"
+    services:
+      amazon: { icon: "📦", name: "Amazon" }
+      ebay: { icon: "🛒", name: "eBay" }
+      etsy: { icon: "🎨", name: "Etsy" }
+      poshmark: { icon: "👗", name: "Poshmark" }
+      grailed: { icon: "👕", name: "Grailed" }
+      gumroad: { icon: "📚", name: "Gumroad" }
+
+  finance:
+    icon: "💳"
+    description: "Financial Services"
+    services:
+      paypal: { icon: "💳", name: "PayPal" }
+      venmo: { icon: "💸", name: "Venmo" }
+      cashapp: { icon: "💵", name: "CashApp" }
+
+  health_fitness:
+    icon: "💪"
+    description: "Health & Fitness"
+    services:
+      strava: { icon: "🚴", name: "Strava" }
+      fitbit: { icon: "⌚", name: "Fitbit" }
+      mapmyfitness: { icon: "🏃", name: "MapMyFitness" }
+      runtastic: { icon: "🏃", name: "Runtastic" }
+      runkeeper: { icon: "🏃", name: "RunKeeper" }
+      peloton: { icon: "🚴", name: "Peloton" }
+      garmin: { icon: "⌚", name: "Garmin" }
+      samsunghealth: { icon: "📱", name: "Samsung Health" }
+      loseit: { icon: "📉", name: "Lose It!" }
+      vivino: { icon: "🍷", name: "Vivino" }
+
+  travel:
+    icon: "✈️"
+    description: "Travel & Transportation"
+    services:
+      airbnb: { icon: "🏠", name: "Airbnb" }
+      uber: { icon: "🚗", name: "Uber" }
+      lyft: { icon: "🚕", name: "Lyft" }
+      foursquare: { icon: "🗺️", name: "Foursquare" }
+      polarsteps: { icon: "👣", name: "Polarsteps" }
+      komoot: { icon: "🗺️", name: "Komoot" }
+      bikemap: { icon: "🚴", name: "Bikemap" }
+
+  education:
+    icon: "🎓"
+    description: "Education & Learning"
+    services:
+      khanacademy: { icon: "🎓", name: "Khan Academy" }
+      duolingo: { icon: "🦉", name: "Duolingo" }
+      sololearn: { icon: "🎓", name: "SoloLearn" }
+      goodreads: { icon: "📚", name: "Goodreads" }
+      bible: { icon: "📖", name: "Bible App" }
+
+  creative:
+    icon: "🎨"
+    description: "Creative & Design"
+    services:
+      deviantart: { icon: "🎨", name: "DeviantArt" }
+      behance: { icon: "🎨", name: "Behance" }
+      dribbble: { icon: "🏀", name: "Dribbble" }
+      adobe: { icon: "🎨", name: "Adobe" }
+      canva: { icon: "🎨", name: "Canva" }
+
+  communication:
+    icon: "📞"
+    description: "Communication & Messaging"
+    services:
+      skype: { icon: "📞", name: "Skype" }
+      zoom: { icon: "📹", name: "Zoom" }
+      teams: { icon: "👥", name: "Microsoft Teams" }
+      slack: { icon: "💬", name: "Slack" }
+
+  news_media:
+    icon: "📰"
+    description: "News & Media"
+    services:
+      medium: { icon: "📝", name: "Medium" }
+      substack: { icon: "📧", name: "Substack" }
+      quora: { icon: "❓", name: "Quora" }
+
+  security:
+    icon: "🔒"
+    description: "Security & Privacy"
+    services:
+      haveibeenpwned: { icon: "🚨", name: "Have I Been Pwned" }
+      protonmail: { icon: "🔒", name: "ProtonMail" }
+      keybase: { icon: "🔑", name: "Keybase" }
+
+  other:
+    icon: "❓"
+    description: "Other Services"
+    services:
+      gravatar: { icon: "👤", name: "Gravatar" }
+      myspace: { icon: "🌐", name: "MySpace" }
+      imageshack: { icon: "📷", name: "Imageshack" }
+      photobucket: { icon: "📸", name: "Photobucket" }
+      imgur: { icon: "📷", name: "Imgur" }
+      flickr: { icon: "📸", name: "Flickr" }
+
+email_modules:
+  - academiaemail
+  - adobeemail
+  - airbnbemail
+  - anghamiemail
+  - appleemail
+  - argusemail
+  - atletoemail
+  - autodsemail
+  - avidemail
+  - babysitsemail
+  - bandlabemail
+  - bdjobsemail
+  - beatstarsemail
+  - beerbuddyemail
+  - bibleemail
+  - bikemapemail
+  - birdaemail
+  - boxemail
+  - chessemail
+  - classpassemail
+  - clusteremail
+  - computrabajoemail
+  - dailytelegraphemail
+  - delectableemail
+  - distilleremail
+  - doordashemail
+  - dropboxemail
+  - duolingoemail
+  - eaemail
+  - ebayemail
+  - elsaemail
+  - eventbriteemail
+  - familylocatoremail
+  - fishangleremail
+  - fishbrainemail
+  - fitbitemail
+  - fitonemail
+  - fittremail
+  - flickremail
+  - flockemail
+  - foursquareemail
+  - gaiaonlineemail
+  - garminemail
+  - giftfulemail
+  - githubemail
+  - golfnowemail
+  - goodreadsemail
+  - googleemail
+  - gowishemail
+  - gravataremail
+  - habitshareemail
+  - halfordsemail
+  - handyemail
+  - haveibeenpwnedemail
+  - hole19email
+  - humemail
+  - imageshackemail
+  - imappemail
+  - imvuemail
+  - indigoemail
+  - khanacademyemail
+  - kinoriumemail
+  - komootemail
+  - launchpademail
+  - libravataremail
+  - lidlemail
+  - life360email
+  - likewiseemail
+  - linkremail
+  - loseitemail
+  - mapmyfitnessemail
+  - mapstremail
+  - mediumemail
+  - microsoftemail
+  - mindbodyemail
+  - myspaceemail
+  - napsteremail
+  - newyorktimesemail
+  - nikeemail
+  - notionemail
+  - offtopemail
+  - oloemail
+  - onebibleemail
+  - onebiteemail
+  - otteremail
+  - pandoraemail
+  - paypalemail
+  - pelotonemail
+  - planetfitnessemail
+  - playtomicemail
+  - plexemail
+  - polarstepsemail
+  - poshemail
+  - poshmarkemail
+  - prayemail
+  - protonmailemail
+  - pyflemail
+  - quoraemail
+  - reelayemail
+  - runkeeperemail
+  - runtasticemail
+  - samsclubemail
+  - samsunghealthemail
+  - savorfoodemail
+  - seznamemail
+  - siriusxmemail
+  - skilineemail
+  - sleeperemail
+  - smuleemail
+  - solidcoreemail
+  - sololearnemail
+  - sportrackeremail
+  - storygraphemail
+  - stravaemail
+  - substackemail
+  - telforemail
+  - templatemonsteremail
+  - theshoecompanyemail
+  - touchtunesemail
+  - trelloemail
+  - tvtimeemail
+  - twitteremail
+  - typeformemail
+  - typingemail
+  - uberemail
+  - untappdemail
+  - venmoemail
+  - vivinoemail
+  - w3schoolsemail
+  - whoxyemail
+  - wimhofemail
+  - winendineemail
+  - yelpemail
+  - zapieremail
+
+phone_modules:
+  - airbudsphone
+  - applephone
+  - attphone
+  - bashphone
+  - beliphone
+  - buzphone
+  - cappuccinophone
+  - carefullyphone
+  - classpassphone
+  - costarphone
+  - cultphone
+  - delectablephone
+  - discordphone
+  - duolingophone
+  - famphone
+  - foursquarephone
+  - gowishphone
+  - hallowphone
+  - healthiphone
+  - imappphone
+  - lapsephone
+  - lit2phone
+  - naborlyphone
+  - owtingphone
+  - paypalphone
+  - pelotonphone
+  - penguphone
+  - pinetworkphone
+  - poshphone
+  - reclipphone
+  - regroupphone
+  - retrophone
+  - runalongphone
+  - shotgunphone
+  - sleeperphone
+  - socialclubphone
+  - substackphone
+  - sunophone
+  - tokeephone
+  - twiliophone
+  - twitterphone
+  - venmophone
+  - versephone
+  - vibesphone
+  - walkietalkiephone
+  - whiteboardphone
+  - wokiiphone
+
+username_modules:
+  - audiojungleusername
+  - bandcampusername
+  - bandlabusername
+  - bitbucketusername
+  - bugcrowdusername
+  - buymeacoffeeusername
+  - cashappusername
+  - characteraiusername
+  - chessusername
+  - deviantartusername
+  - discogsusername
+  - discordusername
+  - disqususername
+  - duolingousername
+  - ebayusername
+  - faktopediausername
+  - fandomusername
+  - fanslyusername
+  - farkusername
+  - geniususername
+  - githubusername
+  - grailedusername
+  - gravatarusername
+  - gumroadusername
+  - imgurusername
+  - instagramusername
+  - keybaseusername
+  - kikusername
+  - lastfmusername
+  - letterboxdusername
+  - linktreeusername
+  - mediumusername
+  - minecraftusername
+  - mixusername
+  - nglusername
+  - osuusername
+  - pandorausername
+  - paypalusername
+  - pinterestusername
+  - poshmarkusername
+  - quizletusername
+  - redditusername
+  - replitusername
+  - robloxusername
+  - scratchusername
+  - snapchatusername
+  - soundcloudusername
+  - steamusername
+  - telegramusername
+  - tiktokusername
+  - tumblrusername
+  - twitchusername
+  - twitterusername
+  - venmousername
+  - youtube2username
+  - youtube3username
+  - youtubeusername
+

@@ -1,0 +1,51 @@
+#!/bin/bash
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SERVICES_FILE="$SCRIPT_DIR/services.yaml"
+
+if [ ! -f "$SERVICES_FILE" ]; then
+  echo "Error: services.yaml not found at $SERVICES_FILE" >&2
+  exit 1
+fi
+
+if [ $# -lt 2 ]; then
+  echo "Usage: $0 <module_type> <module_name> [service_name] [icon]"
+  echo "Example: $0 email newplatformemail 'New Platform' '🆕'"
+  exit 1
+fi
+
+MODULE_TYPE="$1"
+MODULE_NAME="$2"
+SERVICE_NAME="${3:-}"
+ICON="${4:-❓}"
+
+case "$MODULE_TYPE" in
+email | phone | username) ;;
+*)
+  echo "Error: Invalid module type. Must be: email, phone, or username" >&2
+  exit 1
+  ;;
+esac
+
+if yq eval ".${MODULE_TYPE}_modules[] | select(. == \"$MODULE_NAME\")" "$SERVICES_FILE" >/dev/null 2>&1; then
+  echo "Module $MODULE_NAME already exists in $MODULE_TYPE modules"
+  exit 0
+fi
+
+echo "Adding $MODULE_NAME to $MODULE_TYPE modules..."
+yq eval ".${MODULE_TYPE}_modules += [\"$MODULE_NAME\"]" -i "$SERVICES_FILE"
+
+if [ -n "$SERVICE_NAME" ]; then
+
+  BASE_NAME=$(echo "$MODULE_NAME" | sed "s/${MODULE_TYPE}$//")
+
+  if ! yq eval ".categories.*.services.$BASE_NAME" "$SERVICES_FILE" | grep -q "icon"; then
+    echo "Adding $BASE_NAME to 'other' category..."
+    yq eval ".categories.other.services.$BASE_NAME = {icon: \"$ICON\", name: \"$SERVICE_NAME\"}" -i "$SERVICES_FILE"
+  fi
+fi
+
+echo "Successfully added $MODULE_NAME to services configuration"
+
+count=$(yq eval ".${MODULE_TYPE}_modules | length" "$SERVICES_FILE")
+echo "Total $MODULE_TYPE modules: $count"
