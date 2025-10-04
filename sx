@@ -40,9 +40,11 @@ sync_services() {
   
   mkdir -p "$CONFIG_DIR"
   
-  local temp_file="/tmp/sx_services_$$"
-  local old_modules_file="/tmp/sx_old_modules_$$"
-  local new_modules_file="/tmp/sx_new_modules_$$"
+  # Use proper temp directory for Termux
+  local temp_dir="${TMPDIR:-/tmp}"
+  local temp_file="$temp_dir/sx_services_$$"
+  local old_modules_file="$temp_dir/sx_old_modules_$$"
+  local new_modules_file="$temp_dir/sx_new_modules_$$"
   local has_existing=false
   
   if [ -f "$SERVICES_FILE" ]; then
@@ -371,8 +373,10 @@ else
   echo -e "\033[1;36m🔍 OSINT Search Results for: $IDENTIFIER\033[0m"
   echo -e "\033[1;90m$(date '+%Y-%m-%d %H:%M:%S')\033[0m"
 
-  temp_file="/tmp/sx_registered_$$"
-  module_buffer="/tmp/sx_module_$$"
+  # Use proper temp directory for Termux
+  temp_dir="${TMPDIR:-/tmp}"
+  temp_file="$temp_dir/sx_registered_$$"
+  module_buffer="$temp_dir/sx_module_$$"
 
   curl -X POST https://api.osint.sx/search \
     -H "x-api-key: $API_KEY" \
