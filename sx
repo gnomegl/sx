@@ -89,18 +89,23 @@ sync_services() {
     fi
   else
     echo "failed"
+    rm -f "$temp_file"
     if [ "$has_existing" = true ]; then
       echo "Using cached services file"
     elif [ -f "$SCRIPT_DIR/services.yaml" ]; then
       echo "Using local services file"
-      cp "$SCRIPT_DIR/services.yaml" "$SERVICES_FILE"
-      local total_services=$(extract_modules "$SERVICES_FILE" | wc -l)
-      echo "$total_services services loaded"
+      if cp "$SCRIPT_DIR/services.yaml" "$SERVICES_FILE" 2>/dev/null; then
+        local total_services=$(extract_modules "$SERVICES_FILE" | wc -l)
+        echo "$total_services services loaded"
+      else
+        echo "Error: Failed to copy local services.yaml file" >&2
+        exit 1
+      fi
     else
-      echo "Error: Could not download services.yaml and no cached version exists" >&2
+      echo "Error: Could not download services.yaml and no local fallback exists" >&2
+      echo "Expected local file at: $SCRIPT_DIR/services.yaml" >&2
       exit 1
     fi
-    rm -f "$temp_file"
   fi
   
   # Cleanup temp files
